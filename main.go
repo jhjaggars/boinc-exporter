@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/xml"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -101,6 +102,14 @@ func main() {
 	if path != "" {
 		clientStatePath = path
 	}
-	http.Handle("/metrics", syncMiddleware(promhttp.Handler()))
-	http.ListenAndServe(":1971", nil)
+	httpPath := os.Getenv("METRICS_HTTP_PATH")
+	if httpPath == "" {
+		httpPath = "/metrics"
+	}
+	http.Handle(httpPath, syncMiddleware(promhttp.Handler()))
+	port := os.Getenv("METRICS_HTTP_PORT")
+	if port == "" {
+		port = "9100"
+	}
+	http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 }
